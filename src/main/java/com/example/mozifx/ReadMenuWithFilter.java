@@ -13,8 +13,10 @@ public class ReadMenuWithFilter {
 
     private TableView<ObservableList<String>> table;
     private TextField searchField;
+    private TextField idSearchField;
     private ComboBox<String> tableComboBox;
-
+    private RadioButton firstCheckbox;
+    private RadioButton secondCheckbox;
 
     public VBox showData() {
         table = new TableView<>();
@@ -25,12 +27,9 @@ public class ReadMenuWithFilter {
 
         return new VBox(formAndTable, table);
     }
-    private RadioButton firstCheckbox;
-    private RadioButton secondCheckbox;
 
     private VBox createForm() {
         GridPane formGrid = new GridPane();
-
 
         tableComboBox = new ComboBox<>();
         tableComboBox.getItems().addAll("filmek", "szinhazak", "eloadas");
@@ -43,14 +42,19 @@ public class ReadMenuWithFilter {
         formGrid.add(tableComboBox, 1, 0);
 
         searchField = new TextField();
-        searchField.setPromptText("Keresés...");
-        formGrid.add(new Label("Keresés:"), 0, 1);
+        searchField.setPromptText("Keresés név szerint...");
+        formGrid.add(new Label("Név keresés:"), 0, 1);
         formGrid.add(searchField, 1, 1);
+
+        idSearchField = new TextField();
+        idSearchField.setPromptText("Keresés ID szerint...");
+        formGrid.add(new Label("ID keresés:"), 0, 2);
+        formGrid.add(idSearchField, 1, 2);
 
         firstCheckbox = new RadioButton();
         secondCheckbox = new RadioButton();
-        formGrid.add(firstCheckbox, 0, 2);
-        formGrid.add(secondCheckbox, 0, 3);
+        formGrid.add(firstCheckbox, 0, 3);
+        formGrid.add(secondCheckbox, 0, 4);
 
         Button searchButton = new Button("Keresés");
         searchButton.setOnAction(e -> filterData());
@@ -78,88 +82,63 @@ public class ReadMenuWithFilter {
                 break;
         }
     }
+
     private void filterData() {
         String searchTerm = searchField.getText();
+        String idSearchTerm = idSearchField.getText();
         String selectedTable = tableComboBox.getValue();
 
-
         boolean firstCheckboxSelected = firstCheckbox.isSelected();
-        if(firstCheckboxSelected) {
-            secondCheckbox.setSelected(false);
-        }
         boolean secondCheckboxSelected = secondCheckbox.isSelected();
-        if(secondCheckboxSelected)
-        {
-            firstCheckbox.setSelected(false);
-        }
-
 
         StringBuilder filterQuery = new StringBuilder("SELECT * FROM ").append(selectedTable);
 
+        boolean hasCondition = false;
+
+        if (!idSearchTerm.isEmpty()) {
+            filterQuery.append(" WHERE id = ").append(idSearchTerm);
+            hasCondition = true;
+        }
+
+        if (!searchTerm.isEmpty()) {
+            if (hasCondition) {
+                filterQuery.append(" AND");
+            } else {
+                filterQuery.append(" WHERE");
+                hasCondition = true;
+            }
+            filterQuery.append(" cim LIKE '%").append(searchTerm).append("%'");
+        }
+
         switch (selectedTable) {
             case "filmek":
-                if (!searchTerm.isEmpty()) {
-                    filterQuery.append(" WHERE cim LIKE '%").append(searchTerm).append("%'");
-                }
                 if (firstCheckboxSelected) {
-                    if (filterQuery.toString().contains("WHERE")) {
-                        filterQuery.append(" AND ev > 1950");
-                    } else {
-                        filterQuery.append(" WHERE ev > 1950");
-                    }
-                }
-                if (secondCheckboxSelected) {
-                    if (filterQuery.toString().contains("WHERE")) {
-                        filterQuery.append(" AND ev < 1950");
-                    } else {
-                        filterQuery.append(" WHERE ev < 1950");
-                    }
+                    filterQuery.append(hasCondition ? " AND" : " WHERE").append(" ev > 1950");
+                } else if (secondCheckboxSelected) {
+                    filterQuery.append(hasCondition ? " AND" : " WHERE").append(" ev < 1950");
                 }
                 break;
 
             case "szinhazak":
-                if (!searchTerm.isEmpty()) {
-                    filterQuery.append(" WHERE nev LIKE '%").append(searchTerm).append("%'");
-                }
                 if (firstCheckboxSelected) {
-                    if (filterQuery.toString().contains("WHERE")) {
-                        filterQuery.append(" AND ferohely < 300");
-                    } else {
-                        filterQuery.append(" WHERE ferohely < 300");
-                    }
-                }
-                if (secondCheckboxSelected) {
-                    if (filterQuery.toString().contains("WHERE")) {
-                        filterQuery.append(" AND ferohely >= 300");
-                    } else {
-                        filterQuery.append(" WHERE ferohely >= 300");
-                    }
+                    filterQuery.append(hasCondition ? " AND" : " WHERE").append(" ferohely < 300");
+                } else if (secondCheckboxSelected) {
+                    filterQuery.append(hasCondition ? " AND" : " WHERE").append(" ferohely >= 300");
                 }
                 break;
 
             case "eloadas":
-                if (!searchTerm.isEmpty()) {
-                    filterQuery.append(" WHERE szinhaz_nev LIKE '%").append(searchTerm).append("%'");
-                }
                 if (firstCheckboxSelected) {
-                    if (filterQuery.toString().contains("WHERE")) {
-                        filterQuery.append(" AND nezoszam < 100");
-                    } else {
-                        filterQuery.append(" WHERE nezoszam < 100");
-                    }
-                }
-                if (secondCheckboxSelected) {
-                    if (filterQuery.toString().contains("WHERE")) {
-                        filterQuery.append(" AND nezoszam >= 100");
-                    } else {
-                        filterQuery.append(" WHERE nezoszam >= 100");
-                    }
+                    filterQuery.append(hasCondition ? " AND" : " WHERE").append(" nezoszam < 100");
+                } else if (secondCheckboxSelected) {
+                    filterQuery.append(hasCondition ? " AND" : " WHERE").append(" nezoszam >= 100");
                 }
                 break;
         }
 
         loadTableData(selectedTable, filterQuery.toString());
     }
+
     private void loadTableData(String tableName) {
         loadTableData(tableName, "SELECT * FROM " + tableName);
     }
@@ -168,7 +147,7 @@ public class ReadMenuWithFilter {
         ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
         table.getColumns().clear();
 
-        String url = "jdbc:sqlite:C:/Users/msztr/Desktop/javabeadandó/MoziFx/mozi.database";
+        String url = "jdbc:sqlite:C:/Users/msztr/Desktop/java előadás beadandó adatbázis/Java előadás beadandó/MoziFx/mozi.database";
         try (Connection conn = DriverManager.getConnection(url);
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {

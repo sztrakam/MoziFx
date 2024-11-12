@@ -2,7 +2,8 @@ package com.example.mozifx;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.image.Image;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 public class HelloApplication extends Application {
@@ -13,7 +14,8 @@ public class HelloApplication extends Application {
 
         VBox root = new VBox();
         root.getChildren().add(createMenu(primaryStage));
-
+        String imagePath = "file:src/main/resources/images/könyvels.png";
+        setBackgroundImage(root, imagePath);
         Scene scene = new Scene(root, 800, 600);
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -54,7 +56,7 @@ public class HelloApplication extends Application {
             Stage writeStage = new Stage();
             writeStage.setTitle("Rekord Hozzáadás");
             VBox vbox = new VBox(createMenu(writeStage), writeMenu.showWriteMenu());
-            Scene scene = new Scene(vbox, 400, 300);
+            Scene scene = new Scene(vbox, 800, 600);
             writeStage.setScene(scene);
             currentStage.close();
             writeStage.show();
@@ -67,7 +69,7 @@ public class HelloApplication extends Application {
             Stage modifyStage = new Stage();
             modifyStage.setTitle("Rekord Módosítás");
             VBox vbox = new VBox(createMenu(modifyStage), modifyMenu.showModifyMenu());
-            Scene scene = new Scene(vbox, 400, 300);
+            Scene scene = new Scene(vbox, 800, 600);
             modifyStage.setScene(scene);
             currentStage.close();
             modifyStage.show();
@@ -80,7 +82,7 @@ public class HelloApplication extends Application {
             Stage deleteStage = new Stage();
             deleteStage.setTitle("Rekord Törlés");
             VBox vbox = new VBox(createMenu(deleteStage), deleteMenu.showDeleteMenu());
-            Scene scene = new Scene(vbox, 400, 300);
+            Scene scene = new Scene(vbox, 800, 600);
             deleteStage.setScene(scene);
             currentStage.close();
             deleteStage.show();
@@ -90,6 +92,11 @@ public class HelloApplication extends Application {
         menuBar.getMenus().add(adatbazisMenu);
 
         return menuBar;
+    }
+    private void setBackgroundImage(VBox vbox, String imagePath) {
+        Image image = new Image(imagePath);
+        BackgroundImage backgroundImage = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, new BackgroundSize(100,100,true,true,true,false));
+        vbox.setBackground(new Background(backgroundImage));
     }
 
     public static void main(String[] args) {

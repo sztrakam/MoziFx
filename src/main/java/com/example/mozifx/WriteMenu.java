@@ -96,7 +96,7 @@ public class WriteMenu {
 
         Button addButton = new Button("Hozzáadás");
         addButton.setOnAction(e -> addRecord());
-        formGrid.add(addButton, 1, 6); // Frissítve a sor indexe
+        formGrid.add(addButton, 1, 6);
     }
 
     private void addRecord() {
@@ -108,7 +108,7 @@ public class WriteMenu {
         String moziId = moziIdField != null ? moziIdField.getText() : "1";
 
         String insertQuery = "";
-        String url = "jdbc:sqlite:C:/Users/msztr/Desktop/javabeadandó/MoziFx/mozi.database";
+        String url = "jdbc:sqlite:C:/Users/msztr/Desktop/java előadás beadandó adatbázis/Java előadás beadandó/MoziFx/mozi.database";
 
         try (Connection conn = DriverManager.getConnection(url);
              Statement stmt = conn.createStatement()) {

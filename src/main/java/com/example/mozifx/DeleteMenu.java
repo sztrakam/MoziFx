@@ -1,6 +1,8 @@
 package com.example.mozifx;
+
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.geometry.Insets;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -10,8 +12,9 @@ public class DeleteMenu {
 
     private ComboBox<String> tableComboBox;
     private ComboBox<String> idComboBox;
-    private ComboBox<String> nameComboBox;
     private Button deleteButton;
+    private VBox recordFields;
+    String url = "jdbc:sqlite:C:/Users/msztr/Desktop/java előadás beadandó adatbázis/Java előadás beadandó/MoziFx/mozi.database";
 
     private static final Map<String, String[]> tableIdAndNameMap = new HashMap<>() {{
         put("filmek", new String[]{"id", "cim"});
@@ -21,6 +24,8 @@ public class DeleteMenu {
 
     public VBox showDeleteMenu() {
         VBox deleteMenu = new VBox();
+        deleteMenu.setSpacing(10);
+        deleteMenu.setPadding(new Insets(10));
 
         tableComboBox = new ComboBox<>();
         tableComboBox.getItems().addAll("filmek", "szinhazak", "eloadas");
@@ -31,25 +36,28 @@ public class DeleteMenu {
         deleteButton.setOnAction(e -> deleteRecord());
 
         idComboBox = new ComboBox<>();
-        nameComboBox = new ComboBox<>();
+
+        recordFields = new VBox();
+        recordFields.setSpacing(10);
+
         loadIdsAndNames();
 
-        deleteMenu.getChildren().addAll(new Label("Tábla választása:"), tableComboBox,
+        deleteMenu.getChildren().addAll(
+                new Label("Tábla választása:"), tableComboBox,
                 new Label("Rekord azonosító:"), idComboBox,
-                new Label("Rekord név:"), nameComboBox,
-                deleteButton);
+                new Label("Rekord részletei:"), recordFields,
+                deleteButton
+        );
 
         return deleteMenu;
     }
-
     private void loadIdsAndNames() {
         String selectedTable = tableComboBox.getValue();
         String[] columns = tableIdAndNameMap.get(selectedTable);
 
         idComboBox.getItems().clear();
-        nameComboBox.getItems().clear();
+        recordFields.getChildren().clear();
 
-        String url = "jdbc:sqlite:C:/Users/msztr/Desktop/javabeadandó/MoziFx/mozi.database";
         String sql = "SELECT " + columns[0] + ", " + columns[1] + " FROM " + selectedTable;
 
         try (Connection conn = DriverManager.getConnection(url);
@@ -57,11 +65,43 @@ public class DeleteMenu {
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                idComboBox.getItems().add(rs.getString(1));  // ID-k betöltése
-                nameComboBox.getItems().add(rs.getString(2));  // Nevek betöltése
+                idComboBox.getItems().add(rs.getString(1));
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+        }
+
+        idComboBox.setOnAction(e -> showRecordDetails());
+    }
+
+    private void showRecordDetails() {
+        String selectedTable = tableComboBox.getValue();
+        String[] columns = tableIdAndNameMap.get(selectedTable);
+        String selectedId = idComboBox.getValue();
+
+        String sql = "";
+        if (selectedId != null) {
+            sql = "SELECT * FROM " + selectedTable + " WHERE " + columns[0] + " = ?";
+
+            try (Connection conn = DriverManager.getConnection(url);
+                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+                pstmt.setString(1, selectedId);
+
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    recordFields.getChildren().clear();
+                    for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
+                        Label label = new Label(rs.getMetaData().getColumnName(i));
+                        TextField textField = new TextField(rs.getString(i));
+                        textField.setEditable(false);
+                        recordFields.getChildren().addAll(label, textField);
+                    }
+                }
+
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
         }
     }
 
@@ -69,38 +109,29 @@ public class DeleteMenu {
         String selectedTable = tableComboBox.getValue();
         String[] columns = tableIdAndNameMap.get(selectedTable);
         String selectedId = idComboBox.getValue();
-        String selectedName = nameComboBox.getValue();
 
-        if (selectedId == null && selectedName == null) {
-            showAlert("Kérjük, válasszon ki egy rekordot ID vagy név alapján a törléshez.");
+        if (selectedId == null) {
+            showAlert("Kérjük, válasszon ki egy rekordot ID alapján a törléshez.");
             return;
         }
-
-        String url = "jdbc:sqlite:C:/Users/msztr/Desktop/javabeadandó/MoziFx/mozi.database";
         String sql = "";
 
         if (selectedId != null) {
             sql = "DELETE FROM " + selectedTable + " WHERE " + columns[0] + " = ?";
-        } else if (selectedName != null) {
-            sql = "DELETE FROM " + selectedTable + " WHERE " + columns[1] + " = ?";
-        }
 
-        try (Connection conn = DriverManager.getConnection(url);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            try (Connection conn = DriverManager.getConnection(url);
+                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            if (selectedId != null) {
                 pstmt.setString(1, selectedId);
-            } else if (selectedName != null) {
-                pstmt.setString(1, selectedName);
+
+                pstmt.executeUpdate();
+                showAlert("Rekord sikeresen törölve.");
+                loadIdsAndNames();
+
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                showAlert("Hiba történt a rekord törlése során.");
             }
-
-            pstmt.executeUpdate();
-            showAlert("Rekord sikeresen törölve.");
-            loadIdsAndNames();
-
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            showAlert("Hiba történt a rekord törlése során.");
         }
     }
 

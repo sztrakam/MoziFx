@@ -5,18 +5,16 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 
 import java.sql.*;
-
+import java.util.*;
 
 public class ModifyMenu {
 
     private ComboBox<Integer> recordIdComboBox;
-    private TextField titleField;
-    private TextField yearField;
-    private TextField lengthField;
     private ComboBox<String> tableComboBox;
+    private VBox dynamicFieldsContainer;
+    private Map<String, TextField> textFieldsMap = new HashMap<>();
 
-
-
+    String url = "jdbc:sqlite:C:/Users/msztr/Desktop/java előadás beadandó adatbázis/Java előadás beadandó/MoziFx/mozi.database";
 
     public VBox showModifyMenu() {
         VBox layout = new VBox(10);
@@ -27,42 +25,30 @@ public class ModifyMenu {
     private VBox createForm() {
         GridPane formGrid = new GridPane();
 
-
         tableComboBox = new ComboBox<>();
         tableComboBox.getItems().addAll("filmek", "szinhazak", "eloadas");
         tableComboBox.setValue("filmek");
         formGrid.add(new Label("Tábla választása:"), 0, 0);
         formGrid.add(tableComboBox, 1, 0);
 
-
         recordIdComboBox = new ComboBox<>();
         updateRecordIds();
         formGrid.add(new Label("Rekord azonosítója:"), 0, 1);
         formGrid.add(recordIdComboBox, 1, 1);
 
-
-        titleField = new TextField();
-        formGrid.add(new Label("Film cím:"), 0, 2);
-
-        formGrid.add(titleField, 1, 2);
-
-
-        yearField = new TextField();
-        formGrid.add(new Label("Film év:"), 0, 3);
-        formGrid.add(yearField, 1, 3);
-
-
-        lengthField = new TextField();
-        formGrid.add(new Label("Film hossz:"), 0, 4);
-        formGrid.add(lengthField, 1, 4);
-
+        dynamicFieldsContainer = new VBox(10);
+        formGrid.add(dynamicFieldsContainer, 0, 2, 2, 1);
 
         Button modifyButton = new Button("Módosítás");
         modifyButton.setOnAction(e -> modifyRecord());
-        formGrid.add(modifyButton, 1, 5);
+        formGrid.add(modifyButton, 1, 3);
 
+        tableComboBox.setOnAction(e -> {
+            updateRecordIds();
+            updateDynamicFields();
+        });
 
-        tableComboBox.setOnAction(e -> updateRecordIds());
+        recordIdComboBox.setOnAction(e -> loadRecordData());
 
         return new VBox(formGrid);
     }
@@ -70,33 +56,59 @@ public class ModifyMenu {
     private void updateRecordIds() {
         String selectedTable = tableComboBox.getValue();
         recordIdComboBox.getItems().clear();
-        String query="";
-        if(selectedTable=="eloadas")
-        {
-            query="Select filmid from "+selectedTable;
-        }
-        else
-        {
-            query = "SELECT id FROM " + selectedTable;
-        }
-
-        String url = "jdbc:sqlite:C:/Users/msztr/Desktop/javabeadandó/MoziFx/mozi.database";
-
+        String query = selectedTable.equals("eloadas") ? "SELECT filmid AS id FROM " + selectedTable : "SELECT id FROM " + selectedTable;
 
         try (Connection conn = DriverManager.getConnection(url);
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
-                if(selectedTable.equals("eloadas"))
-                {
-                    recordIdComboBox.getItems().add(rs.getInt("filmid"));
-                }
-                else
-                {
-                    recordIdComboBox.getItems().add(rs.getInt("id"));
-                }
+                recordIdComboBox.getItems().add(rs.getInt("id"));
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
 
+    private void updateDynamicFields() {
+        String selectedTable = tableComboBox.getValue();
+        dynamicFieldsContainer.getChildren().clear();
+        textFieldsMap.clear();
 
+        String query = "PRAGMA table_info(" + selectedTable + ")";
+        try (Connection conn = DriverManager.getConnection(url);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            while (rs.next()) {
+                String columnName = rs.getString("name");
+                Label columnLabel = new Label(columnName + ":");
+                TextField textField = new TextField();
+                dynamicFieldsContainer.getChildren().addAll(columnLabel, textField);
+                textFieldsMap.put(columnName, textField);
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void loadRecordData() {
+        String selectedTable = tableComboBox.getValue();
+        Integer selectedId = recordIdComboBox.getValue();
+        if (selectedId == null) {
+            return;
+        }
+
+        String query = "SELECT * FROM " + selectedTable + " WHERE id = " + selectedId;
+        try (Connection conn = DriverManager.getConnection(url);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            if (rs.next()) {
+                for (Map.Entry<String, TextField> entry : textFieldsMap.entrySet()) {
+                    String columnName = entry.getKey();
+                    TextField field = entry.getValue();
+                    field.setText(rs.getString(columnName));
+                }
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -106,39 +118,19 @@ public class ModifyMenu {
     private void modifyRecord() {
         String selectedTable = tableComboBox.getValue();
         Integer selectedId = recordIdComboBox.getValue();
-        String title = titleField.getText();
-        String year = yearField.getText();
-        String length = lengthField.getText();
-
         StringBuilder updateQuery = new StringBuilder("UPDATE ").append(selectedTable).append(" SET ");
 
-        if ("filmek".equals(selectedTable)) {
-            if (!title.isEmpty()) {
-                updateQuery.append("cim = '").append(title).append("', ");
+        for (Map.Entry<String, TextField> entry : textFieldsMap.entrySet()) {
+            String columnName = entry.getKey();
+            String value = entry.getValue().getText();
+            if (!value.isEmpty()) {
+                updateQuery.append(columnName).append(" = '").append(value).append("', ");
             }
-            if (!year.isEmpty()) {
-                updateQuery.append("ev = ").append(year).append(", ");
-            }
-            if (!length.isEmpty()) {
-                updateQuery.append("hossz = ").append(length).append(", ");
-            }
-        } else if ("szinhazak".equals(selectedTable)) {
-            if (!title.isEmpty()) {
-                updateQuery.append("nev = '").append(title).append("', ");
-            }
-
-        } else if ("eloadas".equals(selectedTable)) {
-            if (!title.isEmpty()) {
-                updateQuery.append("moziid = '").append(title).append("', ");
-            }
-
         }
-
 
         updateQuery.setLength(updateQuery.length() - 2);
         updateQuery.append(" WHERE id = ").append(selectedId);
 
-        String url = "jdbc:sqlite:C:/Users/msztr/Desktop/javabeadandó/MoziFx/mozi.database";
         try (Connection conn = DriverManager.getConnection(url);
              Statement stmt = conn.createStatement()) {
             stmt.executeUpdate(updateQuery.toString());
