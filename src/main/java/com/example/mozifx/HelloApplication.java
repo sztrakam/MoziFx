@@ -1,11 +1,12 @@
 package com.example.mozifx;
+import com.example.mozifx.Forex.*;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-
+import com.example.mozifx.Forex.*;
 public class HelloApplication extends Application {
 
     @Override
@@ -20,7 +21,6 @@ public class HelloApplication extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
     }
-
     private MenuBar createMenu(Stage currentStage) {
         MenuBar menuBar = new MenuBar();
         Menu adatbazisMenu = new Menu("Menüpontok");
@@ -88,11 +88,91 @@ public class HelloApplication extends Application {
             deleteStage.show();
         });
 
+
+        Menu forexMenu = new Menu("Forex");
+
+        MenuItem szamlaMenuItem = new MenuItem("Számlainformációk");
+        szamlaMenuItem.setOnAction(e -> {
+            ForexAccountInfoMenu accountInfoMenu = new ForexAccountInfoMenu();
+            Stage accountInfoStage = new Stage();
+            accountInfoStage.setTitle("Számlainformációk");
+            VBox vbox = new VBox(createMenu(accountInfoStage), accountInfoMenu.showAccountInfo());
+            Scene scene = new Scene(vbox, 800, 600);
+            accountInfoStage.setScene(scene);
+            currentStage.close();
+            accountInfoStage.show();
+        });
+
+        MenuItem aktualisArakMenuItem = new MenuItem("Aktuális árak");
+        aktualisArakMenuItem.setOnAction(e -> {
+            ForexCurrentRatesMenu currentRatesMenu = new ForexCurrentRatesMenu();
+            Stage currentRatesStage = new Stage();
+            currentRatesStage.setTitle("Aktuális árak");
+            VBox vbox = new VBox(createMenu(currentRatesStage), currentRatesMenu.showCurrentRates());
+            Scene scene = new Scene(vbox, 800, 600);
+            currentRatesStage.setScene(scene);
+            currentStage.close();
+            currentRatesStage.show();
+        });
+
+        MenuItem historikusArakMenuItem = new MenuItem("Historikus árak");
+        historikusArakMenuItem.setOnAction(e -> {
+            ForexHistoricalRatesMenu historicalRatesMenu = new ForexHistoricalRatesMenu();
+            Stage historicalRatesStage = new Stage();
+            historicalRatesStage.setTitle("Historikus árak");
+            VBox vbox = new VBox(createMenu(historicalRatesStage), historicalRatesMenu.showHistoricalRates());
+            Scene scene = new Scene(vbox, 800, 600);
+            historicalRatesStage.setScene(scene);
+            currentStage.close();
+            historicalRatesStage.show();
+        });
+
+        MenuItem pozicioNyitasMenuItem = new MenuItem("Pozíció nyitás");
+        pozicioNyitasMenuItem.setOnAction(e -> {
+            ForexPositionOpenMenu positionOpenMenu = new ForexPositionOpenMenu();
+            Stage positionOpenStage = new Stage();
+            positionOpenStage.setTitle("Pozíció nyitás");
+            VBox vbox = new VBox(createMenu(positionOpenStage), positionOpenMenu.showPositionOpen());
+            Scene scene = new Scene(vbox, 800, 600);
+            positionOpenStage.setScene(scene);
+            currentStage.close();
+            positionOpenStage.show();
+        });
+
+        MenuItem pozicioZarasMenuItem = new MenuItem("Pozíció zárás");
+        pozicioZarasMenuItem.setOnAction(e -> {
+            ForexPositionCloseMenu positionCloseMenu = new ForexPositionCloseMenu();
+            Stage positionCloseStage = new Stage();
+            positionCloseStage.setTitle("Pozíció zárás");
+            VBox vbox = new VBox(createMenu(positionCloseStage), positionCloseMenu.showPositionClose());
+            Scene scene = new Scene(vbox, 800, 600);
+            positionCloseStage.setScene(scene);
+            currentStage.close();
+            positionCloseStage.show();
+        });
+
+        MenuItem nyitottPoziciokMenuItem = new MenuItem("Nyitott pozíciók");
+        nyitottPoziciokMenuItem.setOnAction(e -> {
+            ForexOpenPositionsMenu openPositionsMenu = new ForexOpenPositionsMenu();
+            Stage openPositionsStage = new Stage();
+            openPositionsStage.setTitle("Nyitott pozíciók");
+            VBox vbox = new VBox(createMenu(openPositionsStage), openPositionsMenu.showOpenPositions());
+            Scene scene = new Scene(vbox, 800, 600);
+            openPositionsStage.setScene(scene);
+            currentStage.close();
+            openPositionsStage.show();
+        });
+
+        forexMenu.getItems().addAll(szamlaMenuItem, aktualisArakMenuItem, historikusArakMenuItem,
+                pozicioNyitasMenuItem, pozicioZarasMenuItem, nyitottPoziciokMenuItem);
+
         adatbazisMenu.getItems().addAll(olvasMenuItem, olvas2MenuItem, irMenuItem, modosítMenuItem, torolMenuItem);
         menuBar.getMenus().add(adatbazisMenu);
+        menuBar.getMenus().add(forexMenu);
 
         return menuBar;
     }
+
     private void setBackgroundImage(VBox vbox, String imagePath) {
         Image image = new Image(imagePath);
         BackgroundImage backgroundImage = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, new BackgroundSize(100,100,true,true,true,false));
