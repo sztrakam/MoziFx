@@ -1,5 +1,6 @@
 package com.example.mozifx.Forex;
 
+import javafx.application.Platform;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
@@ -11,6 +12,7 @@ import java.io.IOException;
 
 public class ForexAccountInfoMenu {
     private TableView<AccountInfo> table;
+
     public VBox showAccountInfo() {
         table = new TableView<>();
 
@@ -31,8 +33,8 @@ public class ForexAccountInfoMenu {
     private void fetchAccountInfo() {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
-                .url("https://api-fxpractice.oanda.com/v3/accounts/{101-004-30354312-001}") // Itt cseréld ki az accountID-t a megfelelő értékre
-                .header("Authorization", "Bearer {f85eabd4e5a7244f676c1f274f7535a8-f21ee92983d86d7c35bedb0c62b55536}")  // Az OANDA API kulcs
+                .url("https://api-fxpractice.oanda.com/v3/accounts/101-004-30354312-001")
+                .header("Authorization", "Bearer 49d2429c39fc29c10fb4b5dafaf81280-588024a435952ec7343e640ec48eff64")
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -44,30 +46,23 @@ public class ForexAccountInfoMenu {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    JSONObject jsonResponse = new JSONObject(response.body().string());
-                    String accountName = jsonResponse.getJSONObject("account").getString("name");
-                    String balance = jsonResponse.getJSONObject("account").getString("balance");
-                    table.getItems().add(new AccountInfo(accountName, balance));
+                    String responseBody = response.body().string();
+                    System.out.println("Válasz: " + responseBody);
+
+                    JSONObject jsonResponse = new JSONObject(responseBody);
+                    JSONObject account = jsonResponse.getJSONObject("account");
+                    String accountName = account.getString("alias");
+                    String balance = account.getString("balance");
+
+                    Platform.runLater(() -> {
+                        table.getItems().add(new AccountInfo(accountName, balance));
+                    });
+                } else {
+                    System.out.println("API hiba: " + response.code() + " - " + response.message());
                 }
             }
         });
     }
+
 }
 
-class AccountInfo {
-    private String accountName;
-    private String balance;
-
-    public AccountInfo(String accountName, String balance) {
-        this.accountName = accountName;
-        this.balance = balance;
-    }
-
-    public String getAccountName() {
-        return accountName;
-    }
-
-    public String getBalance() {
-        return balance;
-    }
-}

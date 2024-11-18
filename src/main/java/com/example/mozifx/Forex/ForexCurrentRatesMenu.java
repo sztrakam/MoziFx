@@ -18,10 +18,9 @@ public class ForexCurrentRatesMenu {
         currencyPairComboBox = new ComboBox<>();
         currencyPairComboBox.getItems().addAll("EUR/USD", "GBP/USD", "USD/JPY");
 
-        // TextField létrehozása az ár megjelenítésére
         rateTextField = new TextField();
         rateTextField.setPromptText("Aktuális ár...");
-        rateTextField.setEditable(false); // Csak olvasható
+        rateTextField.setEditable(false);
 
         Button getRateButton = new Button("Lekérés");
         getRateButton.setOnAction(e -> fetchCurrentRate(currencyPairComboBox.getValue()));
@@ -50,15 +49,12 @@ public class ForexCurrentRatesMenu {
                     String responseBody = response.body().string();
                     JSONObject jsonResponse = new JSONObject(responseBody);
 
-                    // JSON válasz struktúra ellenőrzése
                     double rate = jsonResponse.getJSONArray("prices")
                             .getJSONObject(0)
-                            .getDouble("closeoutBid"); // közvetlenül olvassuk ki az értéket
+                            .getDouble("closeoutBid");
 
-                    // UI frissítése a JavaFX szálon
                     Platform.runLater(() -> {
-                        // Az ár megjelenítése a TextField-ben
-                        rateTextField.setText(String.format("%.4f", rate)); // Formázás, hogy csak 4 tizedesjegy jelenjen meg
+                        rateTextField.setText(String.format("%.4f", rate));
                     });
                 }
             }

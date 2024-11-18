@@ -125,7 +125,7 @@ public class ForexPositionCloseMenu {
         OkHttpClient client = new OkHttpClient();
         String json = "{"
                 + "\"order\": {"
-                + "\"units\": \"" + units + "\","
+                + "\"units\": \"ALL\","
                 + "\"instrument\": \"" + instrument + "\","
                 + "\"type\": \"MARKET\","
                 + "\"positionFill\": \"DEFAULT\""

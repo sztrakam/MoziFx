@@ -47,8 +47,7 @@ public class ForexHistoricalRatesMenu {
         LocalDate startDate = startDatePicker.getValue();
         LocalDate endDate = endDatePicker.getValue();
 
-        String instrument = currencyPairComboBox.getValue().replace("/", "_");  // Pl. EUR/USD -> EUR_USD
-
+        String instrument = currencyPairComboBox.getValue().replace("/", "_");
         String url = String.format("https://api-fxpractice.oanda.com/v3/instruments/%s/candles?granularity=D&start=%s&end=%s",
                 instrument, startDate, endDate);
 

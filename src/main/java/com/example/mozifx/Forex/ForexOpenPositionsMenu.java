@@ -70,7 +70,7 @@ public class ForexOpenPositionsMenu {
                         System.out.println("Nincs nyitott pozíció.");
                     } else {
                         Platform.runLater(() -> {
-                            table.getItems().clear(); // Régi adatok törlése
+                            table.getItems().clear();
                             for (int i = 0; i < positions.length(); i++) {
                                 JSONObject position = positions.getJSONObject(i);
                                 String currencyPair = position.getString("instrument");
