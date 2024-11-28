@@ -6,6 +6,9 @@ module com.example.mozifx {
     requires org.json;
     requires java.sql;
     requires java.desktop;
+    requires Soap;
+    //requires Soap;
+
     opens com.example.mozifx to javafx.fxml;
     opens com.example.mozifx.Forex to javafx.base;
 

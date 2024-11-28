@@ -1,20 +1,46 @@
 package com.example.mozifx;
+
+import com.example.mozifx.Soap.SoapGrafikon;
+import com.example.mozifx.Soap.SoapLetolt;
+import com.example.mozifx.Soap.SoapLetoltForm;
+import com.example.mozifx.Thread.Szal1;
+import com.example.mozifx.Thread.Szal2;
 import com.example.mozifx.Forex.*;
+
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import com.example.mozifx.Forex.*;
+
 public class HelloApplication extends Application {
 
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Mozi CRUD Alkalmazás");
-
+        Label szal1=new Label();
+        szal1.setFont(new Font("Arial", 40));
+        szal1.setPadding(new Insets(100,10,10,300));
+        Label szal2=new Label();
+        szal2.setFont(new Font("Arial", 40));
+        szal2.setPadding(new Insets(10,10,10,250));
         VBox root = new VBox();
-        root.getChildren().add(createMenu(primaryStage));
+        root.getChildren().addAll(createMenu(primaryStage),szal1,szal2);
+
+        Szal1 sz1=new Szal1(szal1);
+        Thread thread1 = new Thread(sz1);
+        thread1.start();
+
+        Szal2 sz2=new Szal2(szal2);
+        Thread thread2 = new Thread(sz2);
+        thread2.start();
+
         String imagePath = "file:src/main/resources/images/könyvels.png";
         setBackgroundImage(root, imagePath);
         Scene scene = new Scene(root, 800, 600);
@@ -163,12 +189,50 @@ public class HelloApplication extends Application {
             openPositionsStage.show();
         });
 
+        Menu soapMenu = new Menu("Soap");
+
+        MenuItem letolt1MenuItem= new MenuItem("Letöltés1");
+        letolt1MenuItem.setOnAction(e -> {
+            SoapLetolt letolt1 = new SoapLetolt();
+            Stage letoltStage1 = new Stage();
+            letoltStage1.setTitle("Letöltés");
+            VBox vbox = new VBox(createMenu(letoltStage1), letolt1.showPage());
+            Scene scene = new Scene(vbox, 800,600);
+            letoltStage1.setScene(scene);
+            currentStage.close();
+            letoltStage1.show();
+        });
+        MenuItem letolt2MenuItem=new MenuItem("Letöltés2");
+        letolt2MenuItem.setOnAction(e -> {
+            SoapLetoltForm letolt2 = new SoapLetoltForm();
+            Stage letoltStage2 = new Stage();
+            letoltStage2.setTitle("Letöltés 2 menü");
+            VBox vbox = new VBox(createMenu(letoltStage2), letolt2.showPage());
+            Scene scene = new Scene(vbox, 800, 600);
+            letoltStage2.setScene(scene);
+            currentStage.close();
+            letoltStage2.show();
+        });
+        MenuItem grafikonMenuItem = new MenuItem("Grafikon");
+        grafikonMenuItem.setOnAction(e -> {
+            SoapGrafikon grafikon = new SoapGrafikon();
+            Stage grafikonStage = new Stage();
+            grafikonStage.setTitle("Grafikon");
+            VBox vbox = new VBox(createMenu(grafikonStage), grafikon.showPage());
+            Scene scene = new Scene(vbox, 800, 600);
+            grafikonStage.setScene(scene);
+            currentStage.close();
+            grafikonStage.show();
+        });
+
+        soapMenu.getItems().addAll(letolt1MenuItem,letolt2MenuItem,grafikonMenuItem);
         forexMenu.getItems().addAll(szamlaMenuItem, aktualisArakMenuItem, historikusArakMenuItem,
                 pozicioNyitasMenuItem, pozicioZarasMenuItem, nyitottPoziciokMenuItem);
 
         adatbazisMenu.getItems().addAll(olvasMenuItem, olvas2MenuItem, irMenuItem, modosítMenuItem, torolMenuItem);
         menuBar.getMenus().add(adatbazisMenu);
         menuBar.getMenus().add(forexMenu);
+        menuBar.getMenus().add(soapMenu);
 
         return menuBar;
     }
