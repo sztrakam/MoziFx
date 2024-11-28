@@ -23,7 +23,7 @@ public class SoapGrafikon {
 
     public VBox showPage(){
         GridPane formGrid = new GridPane();
-        formGrid.add(new Label("Letöltés szűrővel:"), 0, 0);
+        formGrid.add(new Label("Grafikon:"), 0, 0);
         TextField currency = new TextField();
         TextField begYear = new TextField();
         TextField endYear = new TextField();
