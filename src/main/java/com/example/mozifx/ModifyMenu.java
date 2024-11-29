@@ -14,7 +14,7 @@ public class ModifyMenu {
     private VBox dynamicFieldsContainer;
     private Map<String, TextField> textFieldsMap = new HashMap<>();
 
-    String url = "jdbc:sqlite:C:/Users/msztr/Desktop/java előadás beadandó adatbázis/Java előadás beadandó/MoziFx/mozi.database";
+    String url = "jdbc:sqlite:C:/adatok/adatok.database";
 
     public VBox showModifyMenu() {
         VBox layout = new VBox(10);

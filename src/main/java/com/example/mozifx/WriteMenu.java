@@ -108,7 +108,7 @@ public class WriteMenu {
         String moziId = moziIdField != null ? moziIdField.getText() : "1";
 
         String insertQuery = "";
-        String url = "jdbc:sqlite:C:/Users/msztr/Desktop/java előadás beadandó adatbázis/Java előadás beadandó/MoziFx/mozi.database";
+        String url = "jdbc:sqlite:C:/adatok/adatok.database";
 
         try (Connection conn = DriverManager.getConnection(url);
              Statement stmt = conn.createStatement()) {

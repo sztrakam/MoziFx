@@ -29,7 +29,7 @@ public class ReadMenu {
     private void loadData() {
         ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
 
-        String url = "jdbc:sqlite:C:/Users/msztr/Desktop/java előadás beadandó adatbázis/Java előadás beadandó/MoziFx/mozi.database";
+        String url = "jdbc:sqlite:C:/adatok/adatok.database";
         String selectedTable = tableSelector.getValue();
         String sql = "SELECT * FROM " + selectedTable;
 
